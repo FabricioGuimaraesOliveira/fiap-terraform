@@ -25,8 +25,14 @@ module "lambda" {
   lambda_bucket_id         = module.s3.lambda_bucket_id
   apigateway_id            = module.api-gateway.apigateway_id
   apigateway_execution_arn = module.api-gateway.apigateway_execution_arn
+  aws_dynamodb_table_name  = module.dynamo.aws_dynamodb_table_name
 }
 
 module "s3" {
   source = "./modules/s3"
 }
+
+module "dynamo" {
+  source = "./modules/dynamo"
+}
+
