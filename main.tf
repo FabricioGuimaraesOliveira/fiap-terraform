@@ -1,14 +1,10 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
 terraform {
   required_providers {
     aws = "~> 5.0"
   }
 
   backend "s3" {
-    bucket = "terraform-s3-state-greentrace"
+    bucket = "terraform-s3-state-greentrace-aws-academy"
     key    = "greentrace-terraform"
     region = "us-east-1"
   }

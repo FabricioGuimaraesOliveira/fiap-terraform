@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket        = "green-trace-lambda-s3-bucket"
+  bucket        = "green-trace-lambda-s3-bucket-aws-academy"
   force_destroy = true
 
   tags = {
