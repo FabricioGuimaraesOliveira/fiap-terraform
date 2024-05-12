@@ -11,7 +11,7 @@ resource "aws_lambda_function" "auth_lambda" {
 
   role = aws_iam_role.lambda_exec_role.arn
 
-  timeout = 12
+  timeout = 60
   environment {
     variables = {
       CLIENT_TABLE = var.aws_dynamodb_table_name
