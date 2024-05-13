@@ -40,7 +40,3 @@ module "dynamo" {
 module "eks" {
   source = "./modules/eks"
 }
-
-module "rds" {
-  source = "./modules/rds"
-}
