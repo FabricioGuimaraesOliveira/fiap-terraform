@@ -1,5 +1,5 @@
-resource "aws_eks_cluster" "eks-cluster-aws-academy" {
-  name     = var.projectName
+resource "aws_eks_cluster" "eks-cluster-aws-fiap" {
+  name     = "eks-cluster-aws-fiap"
   role_arn = var.labRole
 
   vpc_config {

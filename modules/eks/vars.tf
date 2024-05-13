@@ -3,27 +3,27 @@ variable "regionDefault" {
 }
 
 variable "labRole" {
-  default = "arn:aws:iam::609429599308:role/LabRole"
+  default = "arn:aws:iam::202909432785:role/aws-fiap"
 }
 
 variable "projectName" {
-  default = "Tech Challenge - Grupo 02"
+  default = "TechChallengeGrupo02"
 }
 
 variable "subnetA" {
-  default = "subnet-0e19b596ee056af6b"
+  default = "subnet-08480b24c402ffbed"
 }
 
 variable "subnetB" {
-  default = "subnet-0b23b97bf05c97661"
+  default = "subnet-0055ef4ee5975641e"
 }
 
 variable "subnetC" {
-  default = "subnet-0be1bcfc0b657b3c1"
+  default = "subnet-03773fcca1938e2f6"
 }
 
 variable "vpcId" {
-  default = "vpc-03829cfa166d216b3"
+  default = "vpc-0b380fc40f08a09fc"
 }
 
 variable "instanceType" {
@@ -31,7 +31,7 @@ variable "instanceType" {
 }
 
 variable "principalArn" {
-  default = "arn:aws:iam::609429599308:role/voclabs"
+  default = "arn:aws:iam::202909432785:root"
 }
 
 variable "policyArn" {

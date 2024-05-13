@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "terraform-s3-state-greentrace-aws-academy"
+    bucket = "terraform-s3-state-greentrace-aws-fiap"
     key    = "greentrace-terraform"
     region = "us-east-1"
   }
@@ -37,3 +37,10 @@ module "dynamo" {
   source = "./modules/dynamo"
 }
 
+module "eks" {
+  source = "./modules/eks"
+}
+
+module "rds" {
+  source = "./modules/rds"
+}
