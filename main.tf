@@ -1,5 +1,4 @@
 provider "aws" {
-  profile = "aws"
   region  =  "us-east-1"
 }
 
@@ -39,8 +38,4 @@ module "dynamo" {
 
 module "eks" {
   source = "./modules/eks"
-}
-
-module "rds" {
-  source = "./modules/rds"
 }
