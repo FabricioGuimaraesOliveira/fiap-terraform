@@ -3,7 +3,7 @@ resource "aws_eks_node_group" "node-group-aws-fiap" {
   node_group_name = "NG-${var.projectName}"
   node_role_arn   = var.labRole
   subnet_ids      = ["${var.subnetA}", "${var.subnetB}", "${var.subnetC}"]
-  disk_size       = 50
+  disk_size       = 100
   instance_types   = [var.instanceType]
 
   scaling_config {
