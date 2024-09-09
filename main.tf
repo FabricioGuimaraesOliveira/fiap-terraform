@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "terraform-s3-state-greentrace-aws-fiap"
+    bucket = "terraform-s3-state-greentrace-aws-fiap1"
     key    = "greentrace-terraform"
     region = "us-east-1"
   }
