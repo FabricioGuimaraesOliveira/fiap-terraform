@@ -52,14 +52,24 @@ resource "aws_dynamodb_table" "tf_order_table" {
 }
 
 resource "aws_dynamodb_table" "payments_table" {
-  name         = "payments-table"
-  billing_mode = "PROVISIONED"
+  name           = "payments-table"
+  billing_mode   = "PROVISIONED"
   read_capacity  = 2
   write_capacity = 2
-  hash_key    = "id"
+  hash_key       = "id"
 
   attribute {
     name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  attribute {
+    name = "qrCode"
     type = "S"
   }
 
@@ -69,11 +79,6 @@ resource "aws_dynamodb_table" "payments_table" {
     write_capacity  = 2
     read_capacity   = 2
     projection_type = "ALL"
-
-    attribute {
-      name = "status"
-      type = "S"
-    }
   }
 
   global_secondary_index {
@@ -82,11 +87,5 @@ resource "aws_dynamodb_table" "payments_table" {
     write_capacity  = 2
     read_capacity   = 2
     projection_type = "ALL"
-
-    attribute {
-      name = "qrCode"
-      type = "S"
-    }
   }
 }
-
