@@ -1,11 +1,13 @@
 provider "aws" {
-  
   region  =  "us-east-1"
 }
 
 terraform {
   required_providers {
-    aws = "~> 5.0"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.61.0"
+    }
   }
 
   backend "s3" {
@@ -39,4 +41,12 @@ module "dynamo" {
 
 module "eks" {
   source = "./modules/eks"
+}
+
+module "ecr" {
+  source = "./modules/ecr"
+}
+
+module "sqs" {
+  source = "./modules/sqs"
 }
