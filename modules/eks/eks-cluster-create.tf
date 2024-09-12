@@ -1,63 +1,12 @@
+# Provider
 provider "aws" {
   region = "us-east-1"
-}
-
-# Role para o EKS Cluster
-resource "aws_iam_role" "eks_cluster_role" {
-  name = "eks_cluster_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "eks.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-# Política para o EKS Cluster Role
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_cluster_role.name
-}
-
-# Role para os nodes do EKS
-resource "aws_iam_role" "eks_node_role" {
-  name = "eks_node_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-# Políticas para os nodes do EKS
-resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "eks_ec2_container_policy" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
 # VPC
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.0.0"
+  version = "5.1.2"
 
   name = "eks-vpc"
   cidr = "10.0.0.0/16"
@@ -68,6 +17,8 @@ module "vpc" {
 
   enable_nat_gateway = true
 }
+
+
 
 # Security Group for EKS
 resource "aws_security_group" "eks_sg" {
@@ -90,36 +41,68 @@ resource "aws_security_group" "eks_sg" {
   }
 }
 
-# EKS Cluster
-module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  cluster_name    = "eks-cluster-aws-fiap"
-  cluster_version = "1.24"
-
-  vpc_id          = module.vpc.vpc_id
-  subnet_ids      = module.vpc.private_subnets
-
-  cluster_iam_role_name = aws_iam_role.eks_cluster_role.name
-
-  node_groups = {
-    eks_nodes = {
-      desired_capacity = 3
-      max_capacity     = 4
-      min_capacity     = 1
-
-      instance_type = "t3.medium"
-      key_name      = "eks-keypair"
-
-      additional_security_group_ids = [aws_security_group.eks_sg.id]
-      iam_role_arn = aws_iam_role.eks_node_role.arn
-    }
-  }
+# IAM Role for EKS Cluster
+resource "aws_iam_role" "eks_cluster_role" {
+  name = "eks_cluster_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "eks.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
 }
 
-# IAM Policy para acesso ao DynamoDB e SQS
+# Policy Attachment for EKS Cluster Role
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks_cluster_role.name
+}
+
+# IAM Role for EKS Node Group
+resource "aws_iam_role" "eks_node_role" {
+  name = "eks_node_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+# Policy Attachments for EKS Node Role
+resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ec2_container_policy" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+# Adiciona política para permitir acesso ao ECR
+resource "aws_iam_role_policy_attachment" "ecr_full_access" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+}
+
+# IAM Policy for DynamoDB and SQS access
 resource "aws_iam_policy" "eks_access_policy" {
   name        = "eks-access-policy"
-  description = "Policy to allow EKS to access DynamoDB and SQS"
+  description = "Policy to allow EKS to access DynamoDB, SQS, and RDS"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -145,6 +128,13 @@ resource "aws_iam_policy" "eks_access_policy" {
           "sqs:ChangeMessageVisibility"
         ],
         Resource = "arn:aws:sqs:us-east-1:*:*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "rds:Connect"
+        ],
+        Resource = "arn:aws:rds:us-east-1:*:db/*"
       }
     ]
   })
@@ -156,13 +146,41 @@ resource "aws_iam_role_policy_attachment" "eks_node_policy_attachment" {
   role     = aws_iam_role.eks_node_role.name
 }
 
+# EKS Cluster
+resource "aws_eks_cluster" "eks_cluster" {
+  name     = "eks-cluster-aws-fiap"
+  role_arn = aws_iam_role.eks_cluster_role.arn
+
+  vpc_config {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [aws_security_group.eks_sg.id]
+  }
+}
+# Node Group for EKS
+resource "aws_eks_node_group" "eks_node_group" {
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  node_group_name = "example-node-group"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+  subnet_ids      = module.vpc.private_subnets
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 3
+    min_size     = 1
+  }
+
+  instance_types = ["t3.medium"]
+
+  # Optional: Customize the node group further if needed
+}
+
 # Output do Cluster EKS
 output "eks_cluster_name" {
-  value = module.eks.cluster_id
+  value = aws_eks_cluster.eks_cluster.name
 }
 
 output "eks_cluster_endpoint" {
-  value = module.eks.cluster_endpoint
+  value = aws_eks_cluster.eks_cluster.endpoint
 }
 
 output "eks_cluster_security_group_id" {
@@ -172,3 +190,8 @@ output "eks_cluster_security_group_id" {
 output "eks_node_group_role_arn" {
   value = aws_iam_role.eks_node_role.arn
 }
+
+output "eks_node_group_name" {
+  value = aws_eks_node_group.eks_node_group.node_group_name
+}
+
